@@ -31,6 +31,7 @@
 ```
 [root@ns01 ~]# vi /etc/named.conf
 ```
+<details>
 ```
 options {
 
@@ -215,6 +216,7 @@ view "default" {
     };
 };
 ```
+</details>
 Создадим каталоги для DNS сервера `ns01`.
 ```
 [root@ns01 ~]# mkdir -p /var/named/master
