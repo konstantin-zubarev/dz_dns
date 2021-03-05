@@ -33,7 +33,7 @@
 ```
 
 <details>
-  <summary>Роутер r1:</summary>
+  <summary>[root@ns01 ~]# vi /etc/named.conf</summary>
 
 ```
 options {
