@@ -33,7 +33,7 @@
 ```
 
 <details>
-  <summary>[root@ns01 ~]# vi /etc/named.conf</summary>
+  <summary>named.conf</summary>
 
 ```
 options {
