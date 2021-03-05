@@ -33,7 +33,9 @@
 ```
 
 <details>
+  <summary>Роутер r1:</summary>
 
+```
 options {
 
     // network 
@@ -216,7 +218,7 @@ view "default" {
         allow-update { key "zonetransfer.key"; };
     };
 };
-
+```
 </details>
 
 
