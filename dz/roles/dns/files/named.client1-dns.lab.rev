@@ -1,0 +1,3 @@
+$include "/etc/named/named.dns.lab.rev"
+
+15		IN	PTR	client1.dns.lab.

@@ -1,0 +1,5 @@
+---
+# tasks file for roles/dns
+
+- name: copy resolv.conf to the client
+  template: src=client-resolv.conf.j2 dest=/etc/resolv.conf owner=root group=root mode=0644

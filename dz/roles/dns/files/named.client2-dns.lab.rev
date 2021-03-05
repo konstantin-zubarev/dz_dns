@@ -1,0 +1,4 @@
+$include "/etc/named/named.dns.lab.rev"
+
+15		IN	PTR	web1.dns.lab.
+20		IN	PTR	web2.dns.lab.

@@ -1,0 +1,7 @@
+---
+# defaults file for roles/dns
+
+domain_dns: dns.lab
+search_dns: dns.lab
+ns01: 192.168.50.10
+ns02: 192.168.50.11

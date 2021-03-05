@@ -1,0 +1,22 @@
+---
+# tasks file for roles/dns
+
+- name: Set timezone to Europe/Moscow
+  timezone:
+    name: Europe/Moscow
+    
+- name: install packages
+  package:
+    name: "{{ item }}"
+    state: latest 
+  with_items:
+    - bind
+    - bind-utils
+    - ntp
+  when:
+    - ansible_hostname == "ns01"
+    - ansible_hostname == "ns02"
+
+#- name: copy transferkey to all servers and the client
+#  copy: src=named.zonetransfer.key dest=/etc/named.zonetransfer.key owner=root group=named mode=0644
+#  when: ansible_hostname == "centralServer"

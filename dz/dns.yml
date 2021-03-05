@@ -1,0 +1,7 @@
+---
+
+- name: Configuration dns
+  hosts: all
+  become: true
+  roles: 
+    - dns

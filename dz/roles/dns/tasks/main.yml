@@ -1,0 +1,21 @@
+---
+# tasks file for roles/dns
+
+- name: all
+  include_tasks: all.yml
+
+- name: ns01
+  include_tasks: ns01.yml
+  when: ansible_hostname == "ns01"
+  
+- name: ns02
+  include_tasks: ns02.yml
+  when: ansible_hostname == "ns021"
+  
+- name: client1
+  include_tasks: client1.yml
+  when: ansible_hostname == "client1"
+  
+- name: client2
+  include_tasks: client2.yml
+  when: ansible_hostname == "client2"

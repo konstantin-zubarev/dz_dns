@@ -1,0 +1,3 @@
+$include "/etc/named/master/named.dns.lab"
+
+web1		IN	CNAME	client1.dns.lab.

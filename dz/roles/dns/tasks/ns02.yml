@@ -1,0 +1,14 @@
+---
+# tasks file for roles/dns
+
+- name: copy named.conf
+  copy: src=slave-named.conf dest=/etc/named.conf owner=root group=named mode=0640
+
+- name: copy resolv.conf to the servers
+  template: src=servers-resolv.conf.j2 dest=/etc/resolv.conf owner=root group=root mode=0644
+
+- name: set /etc/named permissions
+  file: path=/etc/named owner=root group=named mode=0670
+
+- name: ensure named is running and enabled
+  service: name=named state=restarted enabled=yes
