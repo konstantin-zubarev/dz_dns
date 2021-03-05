@@ -31,8 +31,9 @@
 ```
 [root@ns01 ~]# vi /etc/named.conf
 ```
+
 <details>
-```
+
 options {
 
     // network 
@@ -215,8 +216,10 @@ view "default" {
         allow-update { key "zonetransfer.key"; };
     };
 };
-```
+
 </details>
+
+
 Создадим каталоги для DNS сервера `ns01`.
 ```
 [root@ns01 ~]# mkdir -p /var/named/master
