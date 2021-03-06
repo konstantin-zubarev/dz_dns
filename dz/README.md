@@ -27,6 +27,11 @@
 ```
 [root@ns01 ~]# yum install -y bind bind-utils
 ```
+Создадим каталог `master` `master` для DNS сервера `ns01`.
+```
+[root@ns01 ~]# mkdir -p /var/named/master
+[root@ns01 ~]# mkdir -p /var/named/master
+```
 Настроим конфигурационный файл `/etc/named.conf`.
 ```
 [root@ns01 ~]# vi /etc/named.conf
@@ -222,11 +227,6 @@ view "default" {
 </details>
 
 
-Создадим каталоги для DNS сервера `ns01`.
-```
-[root@ns01 ~]# mkdir -p /var/named/master
-[root@ns01 ~]# mkdir -p /var/named/keys
-```
 Создадим зоны для DNS сервера `ns01`.
 - `dns.lab`
 - `newdns.lab`
