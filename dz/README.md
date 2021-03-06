@@ -27,11 +27,69 @@
 ```
 [root@ns01 ~]# yum install -y bind bind-utils
 ```
+
 Создадим каталог `master`, `keys` для DNS сервера `ns01`.
 ```
 [root@ns01 ~]# mkdir -p /var/named/master
 [root@ns01 ~]# mkdir -p /var/named/keys
 ```
+
+Для защиты от искажений и подделок ответов сервера, сгенерируем ключ и сохраним в `/var/named/keys`.
+```
+[root@ns01 ~]# dnssec-keygen -a HMAC-MD5 -b 128 -n HOST rndc.key | base64
+S3JuZGMua2V5LisxNTcrMjcwNDAK
+```
+Создадим файл rndc.key в каталоги `/var/named/keys`
+```
+[root@ns01 ~]# vi /var/named/keys/rndc.key
+
+key "rndc.key" {
+    algorithm hmac-md5;
+    secret "S3JuZGMua2V5LisxNTcrMjcwNDAK";
+};
+```
+
+Анологично сделаим для `cleint1_dns.key`, `cleint2_dns.key`, `default.key`
+
+`cleint1_dns.key`
+
+```
+[root@ns01 ~]# dnssec-keygen -a HMAC-MD5 -b 128 -n HOST cleint1_dns.key | base64
+S2NsZWludDFfZG5zLmtleS4rMTU3KzI4NjczCg==
+[root@ns01 ~]# vi /var/named/keys/cleint1_dns.key
+
+key "cleint1_dns.key" {
+    algorithm hmac-md5;
+    secret "S2NsZWludDFfZG5zLmtleS4rMTU3KzMxNTYwCg==";
+};
+```
+
+`cleint2_dns.key`
+
+```
+[root@ns01 ~]# dnssec-keygen -a HMAC-MD5 -b 128 -n HOST cleint2_dns.key | base64
+S2NsZWludDFfZG5zLmtleS4rMTU3KzI4NjczCg==
+[root@ns01 ~]# vi /var/named/keys/cleint2_dns.key
+
+key "cleint2_dns.key" {
+    algorithm hmac-md5;
+    secret "S2NsZWludDJfZG5zLmtleS4rMTU3KzExNzA1Cg==";
+};
+```
+
+`default.key`
+
+```
+[root@ns01 ~]# dnssec-keygen -a HMAC-MD5 -b 128 -n HOST default.key | base64
+S2NsZWludDFfZG5zLmtleS4rMTU3KzI4NjczCg==
+[root@ns01 ~]# vi /var/named/keys/cleint2_dns.key
+
+key "default.key" {
+    algorithm hmac-md5;
+    secret "S2NsZWludDJfZG5zLmtleS4rMTU3KzExNzA1Cg==";
+};
+```
+
 Настроим конфигурационный файл `/etc/named.conf`.
 ```
 [root@ns01 ~]# vi /etc/named.conf
