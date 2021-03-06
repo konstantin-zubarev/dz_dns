@@ -237,6 +237,7 @@ dns.lab
 ```
 </details>
 
+
 <details>
   <summary>newdns.lab</summary>
 
@@ -245,8 +246,10 @@ dns.lab
 ```
 </details>
 
+
 <details>
   <summary>ddns.lab</summary>
+
 ```
 
 ```
@@ -254,10 +257,10 @@ dns.lab
 
 
 Создадим обратную зону для DNS сервера `ns01`.
-- `dns.lab`
 
 <details>
   <summary>dns.lab</summary>
+
 ```
 
 ```
