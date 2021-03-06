@@ -228,26 +228,42 @@ view "default" {
 
 
 Создадим зоны для DNS сервера `ns01`.
-- `dns.lab`
-- `newdns.lab`
-- `ddns.lab`
 
+<details>
+  <summary>dns.lab</summary>
 ```
 
 ```
+</details>
+
+<details>
+  <summary>newdns.lab</summary>
 ```
 
 ```
+</details>
 
+<details>
+  <summary>ddns.lab</summary>
+```
 
+```
+</details>
 
 
 Создадим обратную зону для DNS сервера `ns01`.
 - `dns.lab`
 
+<details>
+  <summary>dns.lab</summary>
+```
+
+```
+</details>
+
 #### 2. Настройка DNS slave на сервере ns02
 
 
 
-#### 1. Настройка DNS master на сервере ns01
+#### 3. Настройка DNS master на сервере ns01
 
