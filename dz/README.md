@@ -68,7 +68,7 @@ key "cleint1_dns.key" {
 
 ```
 [root@ns01 ~]# dnssec-keygen -a HMAC-MD5 -b 128 -n HOST cleint2_dns.key | base64
-S2NsZWludDFfZG5zLmtleS4rMTU3KzI4NjczCg==
+S2NsZWludDJfZG5zLmtleS4rMTU3KzExNzA1Cg==
 [root@ns01 ~]# vi /var/named/keys/cleint2_dns.key
 
 key "cleint2_dns.key" {
@@ -81,12 +81,12 @@ key "cleint2_dns.key" {
 
 ```
 [root@ns01 ~]# dnssec-keygen -a HMAC-MD5 -b 128 -n HOST default.key | base64
-S2NsZWludDFfZG5zLmtleS4rMTU3KzI4NjczCg==
+S2RlZmF1bHQua2V5LisxNTcrMDA1MzMK
 [root@ns01 ~]# vi /var/named/keys/cleint2_dns.key
 
 key "default.key" {
     algorithm hmac-md5;
-    secret "S2NsZWludDJfZG5zLmtleS4rMTU3KzExNzA1Cg==";
+    secret "S2RlZmF1bHQua2V5LisxNTcrMDA1MzMK";
 };
 ```
 
