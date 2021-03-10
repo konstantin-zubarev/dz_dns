@@ -312,10 +312,10 @@ client2	IN	A	192.168.50.20
 ```
 </details>
 
-Дополнительная зона для `client1`
+Дополнительная зона для `client1`:
 
 <details>
-  <summary>named.client1-dns.lab</summary>
+  <summary>client1-dns.lab</summary>
 
 ```
 $include "/var/named/master/named.dns.lab"
@@ -324,10 +324,10 @@ web1		IN	CNAME	client1.dns.lab.
 ```
 </details>
 
-Дополнительная зона для `client2`
+Дополнительная зона для `client2`:
 
 <details>
-  <summary>named.client1-dns.lab</summary>
+  <summary>client1-dns.lab</summary>
 
 ```
 $include "/var/named/master/named.dns.lab"
@@ -337,7 +337,7 @@ web2		IN	CNAME	client2.dns.lab.
 ```
 </details>
 
-Зона `newdns.lab`
+Зона `newdns.lab`:
 
 <details>
   <summary>newdns.lab</summary>
@@ -365,7 +365,7 @@ www		IN	A	192.168.50.20
 ```
 </details>
 
-Зона `ddns.lab`
+Зона `ddns.lab`:
 
 <details>
   <summary>ddns.lab</summary>
@@ -390,11 +390,12 @@ ns02            IN      A       192.168.50.11
 ```
 </details>
 
+В каталоге `/var/named/master/` разместим обратную зоны для DNS сервера `ns01`.
 
-Создадим обратную зону для DNS сервера `ns01`.
+Основная обратная зона:
 
 <details>
-  <summary>dns.lab</summary>
+  <summary>dns.lab.rev</summary>
 
 ```
 $TTL 3600
@@ -416,6 +417,31 @@ $ORIGIN 50.168.192.in-addr.arpa.
 ; other
 15		IN	PTR	client1.dns.lab.
 20		IN	PTR	client2.dns.lab.
+```
+</details>
+
+Дополнительная обратная зона для `client1`:
+
+<details>
+  <summary>client1-dns.lab.rev</summary>
+
+```
+$include "/var/named/master/named.dns.lab.rev"
+
+15		IN	PTR	client1.dns.lab.
+```
+</details>
+
+Дополнительная обратная зона для `client2`:
+
+<details>
+  <summary>client2-dns.lab.rev</summary>
+
+```
+$include "/var/named/master/named.dns.lab.rev"
+
+15		IN	PTR	web1.dns.lab.
+20		IN	PTR	web2.dns.lab.
 ```
 </details>
 
