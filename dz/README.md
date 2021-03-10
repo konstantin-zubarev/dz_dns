@@ -282,7 +282,9 @@ view "default" {
 ```
 </details>
 
-Настроим зоны в каталоге `/var/named/master/` для DNS сервера `ns01`.
+В каталоге `/var/named/master/` разместим зоны для DNS сервера `ns01`.
+
+Основная зона:
 
 <details>
   <summary>dns.lab</summary>
@@ -310,7 +312,7 @@ client2	IN	A	192.168.50.20
 ```
 </details>
 
-Для клиента `client1`
+Дополнительная зона для `client1`
 
 <details>
   <summary>named.client1-dns.lab</summary>
@@ -322,6 +324,20 @@ web1		IN	CNAME	client1.dns.lab.
 ```
 </details>
 
+Дополнительная зона для `client2`
+
+<details>
+  <summary>named.client1-dns.lab</summary>
+
+```
+$include "/var/named/master/named.dns.lab"
+
+web1		IN	CNAME	client1.dns.lab.
+web2		IN	CNAME	client2.dns.lab.
+```
+</details>
+
+Зона `newdns.lab`
 
 <details>
   <summary>newdns.lab</summary>
@@ -349,6 +365,7 @@ www		IN	A	192.168.50.20
 ```
 </details>
 
+Зона `ddns.lab`
 
 <details>
   <summary>ddns.lab</summary>
