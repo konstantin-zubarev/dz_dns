@@ -10,7 +10,7 @@
   
 - name: ns02
   include_tasks: ns02.yml
-  when: ansible_hostname == "ns021"
+  when: ansible_hostname == "ns02"
   
 - name: client1
   include_tasks: client1.yml

@@ -6,17 +6,24 @@
     name: Europe/Moscow
     
 - name: install packages
-  package:
-    name: "{{ item }}"
-    state: latest 
+  package: name={{ item }} state=latest
   with_items:
     - bind
     - bind-utils
-    - ntp
-  when:
-    - ansible_hostname == "ns01"
-    - ansible_hostname == "ns02"
+  when: ansible_hostname == "ns01" or ansible_hostname == "ns02"  or ansible_hostname == "client1"
+  
+- name: Creates directory
+  file: path=/var/named/{{ item }} state=directory owner=named group=named mode=0770
+  with_items:
+    - master
+    - keys
+  when: ansible_hostname == "ns01" or ansible_hostname == "ns02"
 
-#- name: copy transferkey to all servers and the client
-#  copy: src=named.zonetransfer.key dest=/etc/named.zonetransfer.key owner=root group=named mode=0644
-#  when: ansible_hostname == "centralServer"
+- name: copy transferkey to all servers and the client
+  copy: src={{ item.src }} dest={{ item.dest }} owner=root group=named mode=0660
+  with_items:
+    - { src: "rndc-key.key", dest: "/var/named/keys/" }
+    - { src: "cleint1_dns.key", dest: "/var/named/keys/" }
+    - { src: "cleint2_dns.key", dest: "/var/named/keys/" }
+    - { src: "default.key", dest: "/var/named/keys/" }
+  when: ansible_hostname == "ns01" or ansible_hostname == "ns02"

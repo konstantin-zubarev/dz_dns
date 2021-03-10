@@ -4,12 +4,6 @@
 - name: copy named.conf
   copy: src=master-named.conf dest=/etc/named.conf owner=root group=named mode=0640
 
-- name: Creates directory
-  file: path=/var/named/{{ item }} state=directory owner=named group=named mode=0770
-  with_items:
-    - master
-    - keys
-
 - name: copy zones
   copy: src={{ item.src }} dest={{ item.dest }} owner=root group=named mode=0660
   with_items:

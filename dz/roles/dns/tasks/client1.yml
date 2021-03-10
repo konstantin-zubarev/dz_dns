@@ -4,8 +4,14 @@
 - name: copy resolv.conf to the client
   template: src=client-resolv.conf.j2 dest=/etc/resolv.conf owner=root group=root mode=0644
 
-#- name: copy rndc conf file
-#  copy: src=rndc.conf dest=/home/vagrant/rndc.conf owner=vagrant group=vagrant mode=0644
+- name: Creates directory
+  file: path=/var/named/keys state=directory owner=named group=named mode=0770
 
-#- name: copy motd to the client
-#  copy: src=client-motd dest=/etc/motd owner=root group=root mode=0644
+- name: copy rndc conf file
+  copy: src=rndc.conf dest=/home/vagrant/rndc.conf owner=vagrant group=vagrant mode=0644
+
+- name: copy transferkey to all servers and the client
+  copy: src=cleint1_dns.key dest=/home/vagrant/ owner=vagrant group=vagrant mode=0644
+
+- name: copy motd to the client
+  copy: src=client-motd dest=/etc/motd owner=root group=root mode=0644

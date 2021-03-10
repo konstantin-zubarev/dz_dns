@@ -36,16 +36,16 @@
 
 Для защиты от искажений и подделок ответов сервера, сгенерируем ключ и сохраним в `/var/named/keys`.
 ```
-[root@ns01 ~]# dnssec-keygen -a HMAC-MD5 -b 128 -n HOST rndc.key | base64
-S3JuZGMua2V5LisxNTcrMjcwNDAK
+[root@ns01 ~]# dnssec-keygen -a HMAC-MD5 -b 128 -n HOST rndc-key | base64
+GrtiE9kz16GK+OKKU/qJvQ==
 ```
 Создадим файл rndc.key в каталоги `/var/named/keys`
 ```
-[root@ns01 ~]# vi /var/named/keys/rndc.key
+[root@ns01 ~]# vi /var/named/keys/rndc-key.key
 
 key "rndc.key" {
     algorithm hmac-md5;
-    secret "S3JuZGMua2V5LisxNTcrMjcwNDAK";
+    secret "GrtiE9kz16GK+OKKU/qJvQ==";
 };
 ```
 
@@ -112,8 +112,8 @@ options {
 	memstatistics-file "/var/named/data/named_mem_stats.txt";
 
     // server
-	recursion yes;
-	allow-query     { 192.168.50.0/24; };
+    recursion yes;
+    allow-query     { 192.168.50.0/24; };
     allow-transfer { 192.168.50.11; };
     
     // dnssec
@@ -135,35 +135,29 @@ logging {
 };
 
 // RNDC Control for client
-key "rndc-key" {
-    algorithm hmac-md5;
-    secret "GrtiE9kz16GK+OKKU/qJvQ==";
-};
+
 controls {
-    inet 192.168.50.10 allow { 192.168.50.15; } keys { "rndc-key"; }; 
+        inet 192.168.50.10 allow { 192.168.50.15; } keys { "rndc-key"; }; 
 };
 
-acl "client1" {
-    192.168.50.15/32; // client1
-};
+acl "client1" { key "cleint1_dns.key"; 192.168.50.15/32; };
 
-acl "client2" {
-    192.168.50.20/32; // client2
-};
+acl "client2" { key "cleint2_dns.key"; 192.168.50.20/32; };
 
 // ZONE TRANSFER WITH TSIG
-//include "/var/named/keys/named.zonetransfer.key"; 
-
-key "zonetransfer.key" {
-    algorithm hmac-md5;
-    secret "GrtiE9kz16GK+OKKU/qJvQ==";
-};
-server 192.168.50.11 {
-    keys { "zonetransfer.key"; };
-};
+include "keys/rndc-key.key";
+include "keys/cleint1_dns.key";
+include "keys/cleint2_dns.key";
+include "keys/default.key";
 
 view "client1" {
     match-clients { "client1"; };
+
+    allow-transfer { key "cleint1_dns.key"; };
+
+    server 192.168.50.11 {
+        keys { "cleint1_dns.key"; };
+    };
 
     // root zone
     zone "." IN {
@@ -181,34 +175,40 @@ view "client1" {
     zone "dns.lab" {
         type master;
         file "master/named.client1-dns.lab";
-        allow-transfer { key "zonetransfer.key"; };
+        also-notify { 192.168.50.11; };
     };
 
     // newdns.lab zone
     zone "newdns.lab" {
         type master;
         file "master/named.newdns.lab";
-        allow-transfer { key "zonetransfer.key"; };
+        also-notify { 192.168.50.11; };
     };
 
     // dns.lab zone reverse
     zone "50.168.192.in-addr.arpa" {
         type master;
         file "master/named.client1-dns.lab.rev";
-        allow-transfer { key "zonetransfer.key"; };
+        also-notify { 192.168.50.11; };
     };
 
     // ddns.lab zone
     zone "ddns.lab" {
         type master;
         file "dynamic/named.ddns.lab";
-        allow-transfer { key "zonetransfer.key"; };
-        allow-update { key "zonetransfer.key"; };
+        also-notify { 192.168.50.11; };
+        allow-update { key "cleint1_dns.key"; };
     };
 };
 
 view "client2" {
     match-clients { "client2"; };
+
+    allow-transfer { key "cleint2_dns.key"; };
+
+    server 192.168.50.11 {
+        keys { "cleint2_dns.key"; };
+    };
 
     // root zone
     zone "." IN {
@@ -226,19 +226,25 @@ view "client2" {
     zone "dns.lab" {
         type master;
         file "master/named.client2-dns.lab";
-        allow-transfer { key "zonetransfer.key"; };
+        also-notify { 192.168.50.11; };
     };
 
     // dns.lab zone reverse
     zone "50.168.192.in-addr.arpa" {
         type master;
         file "master/named.client2-dns.lab.rev";
-        allow-transfer { key "zonetransfer.key"; };
+        also-notify { 192.168.50.11; };
     };
 };
 
 view "default" {
     match-clients { "any"; };
+
+    allow-transfer { key "default.key"; };
+
+    server 192.168.50.11 {
+        keys { "default.key"; };
+    };
 
     // root zone
     zone "." IN {
@@ -256,42 +262,51 @@ view "default" {
     zone "dns.lab" {
         type master;
         file "master/named.dns.lab";
-        allow-transfer { key "zonetransfer.key"; };
+        also-notify { 192.168.50.11; };
     };
 
     // newdns.lab zone
     zone "newdns.lab" {
         type master;
         file "master/named.newdns.lab";
-        allow-transfer { key "zonetransfer.key"; };
+        also-notify { 192.168.50.11; };
     };
 
     // dns.lab zone reverse
     zone "50.168.192.in-addr.arpa" {
         type master;
         file "master/named.dns.lab.rev";
-        allow-transfer { key "zonetransfer.key"; };
-    };
-
-    // ddns.lab zone
-    zone "ddns.lab" {
-        type master;
-        file "dynamic/named.ddns.lab";
-        allow-transfer { key "zonetransfer.key"; };
-        allow-update { key "zonetransfer.key"; };
+        also-notify { 192.168.50.11; };
     };
 };
 ```
 </details>
 
-
-Создадим зоны для DNS сервера `ns01`.
+Настроим зоны в каталоге `/var/named/master/` для DNS сервера `ns01`.
 
 <details>
   <summary>dns.lab</summary>
 
 ```
-dns.lab
+$TTL 3600
+$ORIGIN dns.lab.
+@		IN	SOA	ns01.dns.lab. root.dns.lab. (
+                            2302211516 ; serial
+                            3600       ; refresh (1 hour)
+                            600        ; retry (10 minutes)
+                            86400      ; expire (1 day)
+                            600        ; minimum (10 minutes)
+			)
+
+		IN	NS	ns01.dns.lab.
+		IN	NS	ns02.dns.lab.
+
+; DNS Servers
+ns01		IN	A	192.168.50.10
+ns02		IN	A	192.168.50.11
+; other
+client1	IN	A	192.168.50.15
+client2	IN	A	192.168.50.20
 ```
 </details>
 
@@ -300,7 +315,25 @@ dns.lab
   <summary>newdns.lab</summary>
 
 ```
+$TTL 3600
+$ORIGIN newdns.lab.
+@		IN	SOA	ns01.newdns.lab. root.newdns.lab. (
+                            2302211517 ; serial
+                            3600       ; refresh (1 hour)
+                            600        ; retry (10 minutes)
+                            86400      ; expire (1 day)
+                            600        ; minimum (10 minutes)
+			)
 
+		IN	NS	ns01.newdns.lab.
+		IN	NS	ns02.newdns.lab.
+
+; DNS Servers
+ns01		IN	A	192.168.50.10
+ns02		IN	A	192.168.50.11
+; other
+www		IN	A	192.168.50.15
+www		IN	A	192.168.50.20
 ```
 </details>
 
@@ -309,7 +342,22 @@ dns.lab
   <summary>ddns.lab</summary>
 
 ```
+$TTL 3600
+$ORIGIN ddns.lab.
+@               IN      SOA     ns01.dns.lab. root.dns.lab. (
+                            2302211516 ; serial
+                            3600       ; refresh (1 hour)
+                            600        ; retry (10 minutes)
+                            86400      ; expire (1 day)
+                            600        ; minimum (10 minutes)
+                        )
 
+                IN      NS      ns01.dns.lab.
+                IN      NS      ns02.dns.lab.
+
+; DNS Servers
+ns01            IN      A       192.168.50.10
+ns02            IN      A       192.168.50.11
 ```
 </details>
 
@@ -320,7 +368,25 @@ dns.lab
   <summary>dns.lab</summary>
 
 ```
+$TTL 3600
+$ORIGIN 50.168.192.in-addr.arpa.
+50.168.192.in-addr.arpa.	IN	SOA	ns01.dns.lab. root.dns.lab. (
+                            2302211516 ; serial
+                            3600       ; refresh (1 hour)
+                            600        ; retry (10 minutes)
+                            86400      ; expire (1 day)
+                            600        ; minimum (10 minutes)
+                        )
 
+		IN	NS	ns01.dns.lab.
+		IN	NS	ns02.dns.lab.
+
+; DNS Servers
+10		IN	PTR	ns01.dns.lab.
+11		IN	PTR	ns02.dns.lab.
+; other
+15		IN	PTR	client1.dns.lab.
+20		IN	PTR	client2.dns.lab.
 ```
 </details>
 
