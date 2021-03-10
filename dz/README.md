@@ -310,6 +310,18 @@ client2	IN	A	192.168.50.20
 ```
 </details>
 
+Для клиента `client1`
+
+<details>
+  <summary>named.client1-dns.lab</summary>
+
+```
+$include "/var/named/master/named.dns.lab"
+
+web1		IN	CNAME	client1.dns.lab.
+```
+</details>
+
 
 <details>
   <summary>newdns.lab</summary>
