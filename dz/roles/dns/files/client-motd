@@ -8,7 +8,7 @@
     nsupdate -k ~/cleint1_dns.key
     server 192.168.50.10
     zone ddns.lab 
-    update add test1.ddns.lab. 3600 A 192.168.50.200
+    update add test.ddns.lab. 60 A 192.168.50.200
     send
     quit
 

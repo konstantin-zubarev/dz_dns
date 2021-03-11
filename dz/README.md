@@ -22,7 +22,7 @@
 
 ### Реализация.
 
-#### 1. Установка и запуск DNS master на сервере ns01
+#### 1. Установка и запуск DNS (master) на сервере ns01
 Установим необходимые пакеты для поднятие DNS сервера `bind`, `bind-utils`.
 ```
 [root@ns01 ~]# yum install -y bind bind-utils
@@ -34,7 +34,8 @@
 [root@ns01 ~]# mkdir -p /var/named/keys
 ```
 
-Для защиты от искажений и подделок ответов сервера, сгенерируем ключ и сохраним в `/var/named/keys`.
+Для защиты от искажений и подделок ответов сервера, сгенерируем ключ и сохраним в `/var/named/keys`. После скопируем все сгенерированые ключи на сервер `ns02` в папку `/var/named/keys`.
+
 ```
 [root@ns01 ~]# dnssec-keygen -a HMAC-MD5 -b 128 -n HOST rndc-key | base64
 GrtiE9kz16GK+OKKU/qJvQ==
@@ -445,9 +446,255 @@ $include "/var/named/master/named.dns.lab.rev"
 ```
 </details>
 
-#### 2. Настройка DNS slave на сервере ns02
+#### 2. Установка и запуск DNS (slave) на сервере ns01
+Установим необходимые пакеты для поднятие DNS сервера `bind`, `bind-utils`.
+```
+[root@ns02 ~]# yum install -y bind bind-utils
+```
+Настроим конфигурационный файл `/etc/named.conf`.
+```
+[root@ns02 ~]# vi /etc/named.conf
+```
 
+<details>
+  <summary>named.conf</summary>
 
+```
+options {
 
-#### 3. Настройка DNS master на сервере ns01
+    // network 
+	listen-on port 53 { 192.168.50.11; };
+	listen-on-v6 port 53 { ::1; };
 
+    // data
+	directory 	"/var/named";
+	dump-file 	"/var/named/data/cache_dump.db";
+	statistics-file "/var/named/data/named_stats.txt";
+	memstatistics-file "/var/named/data/named_mem_stats.txt";
+
+    // server
+	recursion yes;
+	allow-query     { any; };
+    allow-transfer { any; };
+    
+    // dnssec
+	dnssec-enable yes;
+	dnssec-validation yes;
+
+    // others
+	bindkeys-file "/etc/named.iscdlv.key";
+	managed-keys-directory "/var/named/dynamic";
+	pid-file "/run/named/named.pid";
+	session-keyfile "/run/named/session.key";
+};
+
+logging {
+    channel default_debug {
+        file "data/named.run";
+        severity dynamic;
+    };
+};
+
+// RNDC Control for client
+
+controls {
+        inet 192.168.50.10 allow { 192.168.50.15; } keys { "rndc-key"; }; 
+};
+
+acl "client1" { key "cleint1_dns.key"; 192.168.50.15/32; };
+
+acl "client2" { key "cleint2_dns.key"; 192.168.50.20/32; };
+
+// ZONE TRANSFER WITH TSIG
+include "keys/rndc-key.key";
+include "keys/cleint1_dns.key";
+include "keys/cleint2_dns.key";
+include "keys/default.key";
+
+view "client1" {
+    match-clients { "client1"; };
+
+    server 192.168.50.10 {
+        keys { "cleint1_dns.key"; };
+    };
+
+    // root zone
+    zone "." IN {
+        type hint;
+        file "named.ca";
+    };
+
+    // zones like localhost
+    include "/etc/named.rfc1912.zones";
+
+    // roots DNSKEY
+    include "/etc/named.root.key";
+
+    // dns.lab zone
+    zone "dns.lab" {
+        type slave;
+        masters { 192.168.50.10; };
+        file "slaves/named.client1-dns.lab";
+    };
+
+    // newdns.lab zone
+    zone "newdns.lab" {
+        type slave;
+        masters { 192.168.50.10; };
+        file "slaves/named.newdns.lab";
+    };
+
+    // dns.lab zone reverse
+    zone "50.168.192.in-addr.arpa" {
+        type slave;
+        masters { 192.168.50.10; };
+        file "slaves/named.client1-dns.lab.rev";
+    };
+
+    // ddns.lab zone
+    zone "ddns.lab" {
+        type slave;
+        masters { 192.168.50.10; };
+        file "slaves/named.ddns.lab";
+    };
+};
+
+view "client2" {
+    match-clients { "client2"; };
+
+    server 192.168.50.10 {
+        keys { "cleint2_dns.key"; };
+    };
+
+    // root zone
+    zone "." IN {
+        type hint;
+        file "named.ca";
+    };
+
+    // zones like localhost
+    include "/etc/named.rfc1912.zones";
+
+    // roots DNSKEY
+    include "/etc/named.root.key";
+
+    // dns.lab zone
+    zone "dns.lab" {
+        type slave;
+        masters { 192.168.50.10; };
+        file "slaves/named.client2-dns.lab";
+    };
+
+    // dns.lab zone reverse
+    zone "50.168.192.in-addr.arpa" {
+        type slave;
+        masters { 192.168.50.10; };
+        file "slaves/named.client2-dns.lab.rev";
+    };
+
+};
+
+view "default" {
+    match-clients { "any"; };
+
+    server 192.168.50.10 {
+        keys { "default.key"; };
+    };
+
+    // root zone
+    zone "." IN {
+        type hint;
+        file "named.ca";
+    };
+
+    // zones like localhost
+    include "/etc/named.rfc1912.zones";
+
+    // roots DNSKEY
+    include "/etc/named.root.key";
+
+    // dns.lab zone
+    zone "dns.lab" {
+        type slave;
+        masters { 192.168.50.10; };
+        file "slaves/named.dns.lab";
+    };
+
+    // newdns.lab zone
+    zone "newdns.lab" {
+        type slave;
+        masters { 192.168.50.10; };
+        file "slaves/named.newdns.lab";
+    };
+
+    // dns.lab zone reverse
+    zone "50.168.192.in-addr.arpa" {
+        type slave;
+        masters { 192.168.50.10; };
+        file "slaves/named.dns.lab.rev";
+    };
+};
+```
+</details>
+
+#### Для проверки ДЗ
+
+На хосте `client1` видо обе зоны, но в зоне dns.lab только web1
+
+```
+[vagrant@client1 ~]$ dig web1.dns.lab +short @192.168.50.10
+client1.dns.lab.
+192.168.50.15
+[vagrant@client1 ~]$ dig web1.dns.lab +short @192.168.50.11
+client1.dns.lab.
+192.168.50.15
+[vagrant@client1 ~]$ dig web2.dns.lab +short @192.168.50.10
+[vagrant@client1 ~]$ dig web2.dns.lab +short @192.168.50.11
+[vagrant@client1 ~]$ dig www.newdns.lab +short @192.168.50.10
+192.168.50.20
+192.168.50.15
+[vagrant@client1 ~]$ dig www.newdns.lab +short @192.168.50.11
+192.168.50.20
+192.168.50.15
+```
+
+На хосте `client2` видо только dns.lab
+
+```
+[vagrant@client2 ~]$ dig web1.dns.lab +short @192.168.50.10
+client1.dns.lab.
+192.168.50.15
+[vagrant@client2 ~]$ dig web1.dns.lab +short @192.168.50.11
+client1.dns.lab.
+192.168.50.15
+[vagrant@client2 ~]$ dig web2.dns.lab +short @192.168.50.10
+client2.dns.lab.
+192.168.50.20
+[vagrant@client2 ~]$ dig web2.dns.lab +short @192.168.50.11
+client2.dns.lab.
+192.168.50.20
+[vagrant@client2 ~]$ dig www.newdns.lab +short @192.168.50.10
+[vagrant@client2 ~]$ dig www.newdns.lab +short @192.168.50.11
+```
+
+Обновим зону ddns.lab с помощью `nsupdate`.
+
+```
+[vagrant@client1 ~]$ nsupdate -k ~/cleint1_dns.key
+> server 192.168.50.10
+> zone ddns.lab
+> update add test1.ddns.lab. 60 A 192.168.50.201
+> send
+> quit
+```
+```
+[vagrant@client1 ~]$ dig test.ddns.lab +short @192.168.50.10 
+192.168.50.200
+[vagrant@client1 ~]$ dig test.ddns.lab +short @192.168.50.11
+192.168.50.200
+```
+Зона `ddns.lab` обновилась на сервере `ns01 (master)` и `ns02 (slave)`.
+
+Ссылка на дополнительную информацию
+- [DNS-сервер BIND9](https://wiki.astralinux.ru/pages/viewpage.action?pageId=27362248)
+- [Установка Bind 9 (named) в CentOS 7](https://serveradmin.ru/nastroyka-dns-servera-bind-v-centos-7/)

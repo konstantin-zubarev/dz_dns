@@ -10,7 +10,6 @@
   with_items:
     - bind
     - bind-utils
-  when: ansible_hostname == "ns01" or ansible_hostname == "ns02"  or ansible_hostname == "client1"
   
 - name: Creates directory
   file: path=/var/named/{{ item }} state=directory owner=named group=named mode=0770
